@@ -46,5 +46,5 @@ jobs:
         run: |
           yarn sync-post
           git add .
-          git commit -m 'chore(ci): blog sync'
+          git commit -m --allow-empty 'chore(ci): blog sync'
           git push
