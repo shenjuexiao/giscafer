@@ -25,6 +25,10 @@ jobs:
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v2
+        # 20260711
+        # 添加这行
+        # GITHUB_TOKEN 默认没有足够的权限来推送代码到仓库
+        token: ${{ secrets.GH_TOKEN }}  
 
       - name: Git config 🔧
         run: |
