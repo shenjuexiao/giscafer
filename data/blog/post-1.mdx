@@ -2,17 +2,23 @@
   title: The requested URL returned error: 403
   publishedAt: 2026-07-11T08:33:33Z
   summary: 查看全文>>
-  tags: ["Git"]
+  tags: ["git"]
 ---
 
 # The requested URL returned error: 403
-# GitHub Actions push 403 权限拒绝解决
-[豆包：GitHub Actions 403](https://www.doubao.com/chat/38434639772911618)
 
-<img width="1800" height="900" alt="Image" src="https://github.com/user-attachments/assets/63dbdd13-b4e5-416b-a499-498169f6c682" />
+# GitHub Actions push 403 权限拒绝解决
+
+## 内容来源
+
+- [豆包：GitHub Actions 403](https://www.doubao.com/chat/38434639772911618)
+- [The requested URL returned error: 403](https://github.com/shenjuexiao/giscafer/issues/1)
+
+<img src="https://cdn.jsdelivr.net/gh/shenjuexiao/shenjuexiao@main/Github_png/Giscafer_GitHub_Actions_push_403.png" />
 
 ## fatal: unable to access
-````
+
+```yaml
 Run yarn sync-post
   yarn sync-post
   git add .
@@ -36,10 +42,10 @@ Done in 0.33s.
 remote: Permission to ***/***.git denied to github-actions[bot].
 fatal: unable to access 'https://github.com/***/***/': The requested URL returned error: 403
 Error: Process completed with exit code 128.
-````
+```
 
 ## 文件：`.github/workflows/sync-post.yml`
-````
+```yaml
 name: Sync Post
 
 # Controls when the workflow will run
@@ -90,9 +96,9 @@ jobs:
           git add .
           git commit -m 'chore(ci): blog sync'
           git push
-````
+```
 
-github-actions[bot] 没有仓库写入推送权限，触发 403 forbidden。
+**github-actions[bot]** 没有仓库写入推送权限，触发 403 forbidden。
 
 ## 三种常见场景
 1. 仅配置 GH_TOKEN，但仓库默认工作流令牌无写权限（默认只读）
@@ -109,7 +115,7 @@ Read repository contents and packages permissions`）
 保存设置，重新运行 Actions。
 原理：内置 GITHUB_TOKEN 会获得推送、修改文件权限，无需额外个人 Token。
 
-<img width="1800" height="900" alt="Image" src="https://github.com/user-attachments/assets/c3728a8c-1afc-4df2-b30d-383b8a5f35b2" />
+<img src="https://cdn.jsdelivr.net/gh/shenjuexiao/shenjuexiao@main/Github_png/Giscafer_Settings_Actions_General_Workflow-permissions.png" />
 
 ## 方案二：改用个人 PAT Token（适合需要跨仓库 / 更多权限）
 1. 创建 GitHub 个人访问令牌 PAT
@@ -122,7 +128,7 @@ Name：GH_TOKEN。
 Value：粘贴上面的 PAT。
 3. 修改 `workflow` 注入授权（关键，你现有脚本缺授权）
 你的脚本直接 `git push`，但 https 地址没带上 token，需要在 shell 里替换 remote url：
-````
+```yaml
 steps:
   - uses: actions/checkout@v4
     # 必须加上 fetch-depth=0，否则无法正常commit push
@@ -142,7 +148,8 @@ steps:
       git commit -m 'chore(ci): blog sync'
       git push
     shell: /usr/bin/bash -e {0}
-````
+```
+
 ## 关键遗漏点（原配置2个问题）
 1. `checkout` 未加 `fetch-depth:0`
 默认只拉取最新一次提交，缺少完整 git 历史，`commit/push` 极易异常。
@@ -160,7 +167,8 @@ steps:
 - 脚本改成自动创建 PR，而非直接 push
 
 ## 完整可直接复制的 job 模板
-````
+
+```yaml
 jobs:
   sync-blog:
     runs-on: ubuntu-latest
@@ -192,7 +200,8 @@ jobs:
           git add .
           git commit -m 'chore(ci): blog sync' || echo "无文件变更，跳过提交"
           git push
-````
+```
+
 新增 `git config` 配置提交者用户名邮箱，避免无身份提交报错；
 `|| echo` 兼容「无修改文件」场景，不会因为没有变更直接终止任务。
 

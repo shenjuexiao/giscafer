@@ -1,11 +1,74 @@
 ---
-  title: Test
+  title: Giscafer Blog
   publishedAt: 2026-07-11T10:22:24Z
   summary: 查看全文>>
-  tags: ["Git"]
+  tags: ["git"]
 ---
 
-Test
+
+# Giscafer Blog 安装
+ 
+## 内容来源
+
+- [作者：giscafer.com](https://github.com/giscafer/blog)
+Giscafer Blog这是一个基于 Next.js + GitHub Issues 的博客解决方案。它的核心原理是监听 GitHub Issues 的变更，自动同步并生成博客文章，部署在 Vercel 上。
+
+## 准备工作
+
+环境要求：确保你的电脑上已安装 Git 和 Node.js。
+代码获取：
+
+```bash
+git clone https://github.com/giscafer/blog.git
+```
+
+## 修改文件
+`scripts/github/syncPost.js`
+
+```javascript
+function main() {
+  const filePath = path.resolve(__dirname, blogOutputPath)
+  // 只查询自己的issues，避免别人创建的也更新到博客
+  issueInstance.listIssues({ creator: '<用户名>' }).then(({ data }) => {
+    let successCount = 0
+    fs.ensureDirSync(filePath)
+    fs.emptyDirSync(filePath)
+    for (const item of data) {
+      try {
+        const content = generateMdx(item)
+        /* const tempFileName = item.title?.trim().replace(/\//g, '&').replace(/、/g, '-').replace(/ - /g, '-').replace(/\s/g, '-')
+        const result = pinyin(tempFileName, {
+          style: 0,
+        })
+        const fileName = _.flatten(result).join('') */
+        // 文件名换成issue number
+        const fileName = `post-${item.number}`
+        fs.writeFileSync(`${filePath}/${fileName}.mdx`, content)
+        console.log(`${filePath}/${fileName}.mdx`, 'success')
+        successCount++
+      } catch (error) {
+        console.log(error)
+      }
+    }
+    if (successCount === data.length) {
+      console.log('文章全部同步成功！', data.length)
+    } else {
+      console.log('文章同步失败！失败数量=', data.length - successCount)
+    }
+  })
+}
+```
+
+## 新建仓库
+新建仓库，仓库首页， `Settings` -> `Secrets and variables` -> `Actions` -> `New repository secret`
+`GH_USER`：<用户名>。
+`GH_PROJECT_NAME`：<仓库名>。
+
+## 新建Issue
+生成 `*.mdx` 文件，位于 `data/blog`。
+
+## 部署 vercel
+
 
 ---
 本人自动发布于：[https://github.com/shenjuexiao/giscafer/issues/2](https://github.com/shenjuexiao/giscafer/issues/2)
